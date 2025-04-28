@@ -60,7 +60,14 @@ func main() {
 	v1Router.Get("/healthz", handlerReadiness)
 	v1Router.Get("/err", handlerErr)
 	v1Router.Post("/users", apiCfg.handlerUser)
+	v1Router.Get("/users", apiCfg.middleware_auth(apiCfg.handlerGetUser))
+	v1Router.Post("/feeds", apiCfg.middleware_auth(apiCfg.handlerCreateFeed))
+	v1Router.Get("/feeds", apiCfg.handlerGetFeeds)
+	v1Router.Post("/feed_follows", apiCfg.middleware_auth(apiCfg.handlerCreateFeedFollows))
+	v1Router.Get("/feed_follows", apiCfg.middleware_auth(apiCfg.handlerGetFeedFollows))
+	v1Router.Delete("/feed_follows/{feedFollowId}", apiCfg.middleware_auth(apiCfg.handlerDeleteFeedFollows))
 
+	
 	router.Mount("/v1", v1Router)
 
 	server := &http.Server{

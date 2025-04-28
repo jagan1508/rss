@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	_ "github.com/jagan1508/rss/internal/auth"
 	"github.com/jagan1508/rss/internal/database"
 )
 
@@ -39,5 +40,9 @@ func (apiCfg *apiConfig) handlerUser(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, 400, fmt.Sprintf("Cannot create user %v", err))
 		return
 	}
+	respondJson(w, 201, databaseUserToUser(user))
+}
+
+func (apiCfg *apiConfig) handlerGetUser(w http.ResponseWriter, r *http.Request, user database.User) {
 	respondJson(w, 200, databaseUserToUser(user))
 }
