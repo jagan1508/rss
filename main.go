@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/cors"
@@ -20,7 +21,11 @@ type apiConfig struct {
 }
 
 func main() {
-
+	feed, err := urlToFeed("https://www.wagslane.dev/index.xml")
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(feed)
 	godotenv.Load()
 
 	portStr := os.Getenv("PORT")
@@ -41,10 +46,12 @@ func main() {
 		log.Fatal("Cannot connect to database")
 	}
 
+	db := database.New(conn)
 	apiCfg := apiConfig{
-		DB: database.New(conn),
+		DB: db,
 	}
 
+	go startScraping(db, 10, time.Minute)
 	router := chi.NewRouter()
 
 	router.Use(cors.Handler(cors.Options{
@@ -67,7 +74,6 @@ func main() {
 	v1Router.Get("/feed_follows", apiCfg.middleware_auth(apiCfg.handlerGetFeedFollows))
 	v1Router.Delete("/feed_follows/{feedFollowId}", apiCfg.middleware_auth(apiCfg.handlerDeleteFeedFollows))
 
-	
 	router.Mount("/v1", v1Router)
 
 	server := &http.Server{
